@@ -1,5 +1,13 @@
 import { Page, Locator, expect } from '@playwright/test';
 
+/**
+ * Improvements:
+ *  - This page can be improved by using pageManager to handle multiple pages
+ *  - The number lines of code can be reduced by moving some locators to its method
+ *   -- It violates KISS principle but improves readability
+ *  - Some methods can be moved to helper class if needed and this class can extends it
+ *  - Screenshots and Videos
+ */
 export class ContactsPage {
   readonly page: Page;
   readonly contactsLink: Locator;
@@ -110,7 +118,7 @@ export class ContactsPage {
   async selectMemberSinceDate(date: number) {
     await this.contentFrame.locator('#ctl00_content_editMemberSince_PU_TG_CONT').click();
     await expect(this.contentFrame.locator('#ctl00_content_editMemberSince_PU_PN_WeekRows')).toBeVisible();
-    await this.contentFrame.locator('.DES_CalDay', { hasText: date.toString() }).click();
+    await this.contentFrame.locator('.DES_CalDay', { hasText: date.toString() }).first().click();
   }
 
   async checkBoardMembers() {

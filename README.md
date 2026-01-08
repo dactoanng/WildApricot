@@ -42,7 +42,8 @@ Demo/
 │   └── contacts.spec.ts          # Test cases (TC1-TC8)
 ├── utils/
 │   ├── contactsPage.ts            # ContactsPage page object
-│   └── fixtures.ts                # Custom Playwright fixtures
+│   ├── loginPage.ts               # LoginPage page object
+│   └── base.ts                    # Custom Playwright fixtures
 ├── playwright-report/             # HTML test reports
 ├── test-results/                  # Test execution results
 ├── .env                           # Environment variables (not in git)

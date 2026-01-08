@@ -1,26 +1,18 @@
-import { test, expect } from '../utils/fixtures';
-import { ContactsPage } from '../utils/contactsPage';
-import { faker } from '@faker-js/faker';
+import { test, expect } from '../utils/base';
 
 /**
  * Contact Management Test Suite - Tests run sequentially
  * Login and navigation to Admin view is handled by the fixture
+ * 
+ * Improvements:
+ *  - This test can be improved by using pageManager to reduce instant creation every test cases
+ *  - Create helper class to move some methods so contactsPage.ts can extends
+ * 
  */
 test.describe.serial('Contact Management Flow', () => {
-  
-  test.afterEach(async ({ authenticatedPage: page }) => {
-    await page.close();
-    console.log('Browser closed after test');
-  });
 
-  test('TC1-Add new contact', async ({ authenticatedPage: page }) => {
-  const contactsPage = new ContactsPage(page);
-  const randomFN = faker.person.firstName();
-  const randomLN = faker.person.lastName();
-  const randomEmail = `${randomFN}.${randomLN}@test.com`.toLowerCase();
-  const randomCompany = faker.company.name();
-  const randomPhone = faker.phone.number();
-
+  test('TC1-Add new contact', async ({ page, loginPage, contactsPage, testContact }) => {
+  await loginPage.login();
   await contactsPage.navigateToContacts();
   await contactsPage.clickAddContact();
 
@@ -28,11 +20,11 @@ test.describe.serial('Contact Management Flow', () => {
   
   // Fill contact form
   await contactsPage.fillContactForm({
-    firstName: randomFN,
-    lastName: randomLN,
-    company: randomCompany,
-    email: randomEmail,
-    phone: randomPhone
+    firstName: testContact.firstName,
+    lastName: testContact.lastName,
+    company: testContact.company,
+    email: testContact.email,
+    phone: testContact.phone
   });
 
   await contactsPage.verifyFileUploadVisible();
@@ -40,22 +32,17 @@ test.describe.serial('Contact Management Flow', () => {
 
   // Verify new contact is added successfully
   await contactsPage.verifyContactDetails({
-    firstName: randomFN,
-    lastName: randomLN,
-    email: randomEmail,
-    phone: randomPhone
+    firstName: testContact.firstName,
+    lastName: testContact.lastName,
+    email: testContact.email,
+    phone: testContact.phone
   });
   })
 
-  test('TC2-Add new member', async ({ authenticatedPage: page }) => {
-  const contactsPage = new ContactsPage(page);
+  test('TC2-Add new member', async ({ page, loginPage, contactsPage, testContact }) => {
   const currentDate = new Date().getDate();
-  const randomFN = faker.person.firstName();
-  const randomLN = faker.person.lastName();
-  const randomEmail = `${randomFN}.${randomLN}@test.com`.toLowerCase();
-  const randomCompany = faker.company.name();
-  const randomPhone = faker.phone.number();
 
+  await loginPage.login();
   await contactsPage.navigateToContacts();
   await contactsPage.clickAddMember();
 
@@ -70,11 +57,11 @@ test.describe.serial('Contact Management Flow', () => {
 
   // Fill contact form
   await contactsPage.fillContactForm({
-    firstName: randomFN,
-    lastName: randomLN,
-    company: randomCompany,
-    email: randomEmail,
-    phone: randomPhone
+    firstName: testContact.firstName,
+    lastName: testContact.lastName,
+    company: testContact.company,
+    email: testContact.email,
+    phone: testContact.phone
   });
 
   await contactsPage.verifyFileUploadVisible();
@@ -84,19 +71,20 @@ test.describe.serial('Contact Management Flow', () => {
 
   // Verify new member details
   await contactsPage.verifyContactDetails({
-    firstName: randomFN,
-    lastName: randomLN,
-    email: randomEmail,
-    phone: randomPhone
+    firstName: testContact.firstName,
+    lastName: testContact.lastName,
+    email: testContact.email,
+    phone: testContact.phone
   });
   })
 
-  test('TC3-Advanced search contact/member and create saved searches', async ({ authenticatedPage: page }) => {
-    const contactsPage = new ContactsPage(page);
+  test('TC3-Advanced search contact/member and create saved searches', async ({ page, loginPage, contactsPage }) => {
     //This randomNumber should be improve to avoid duplication in the future
     const randomNumber = Math.floor(Math.random() * 100) + 1;
     const searchValue = '@test';
     const saveSearchedValue = searchValue + randomNumber;
+    
+    await loginPage.login();
     
     await contactsPage.navigateToContacts();
     await contactsPage.clickAdvancedSearchTab();
@@ -116,8 +104,8 @@ test.describe.serial('Contact Management Flow', () => {
     await contactsPage.runSavedSearchTab(saveSearchedValue);
   })
 
-  test('TC4-Archive contact/member', async ({ authenticatedPage: page }) => {
-    const contactsPage = new ContactsPage(page);
+  test('TC4-Archive contact/member', async ({ page, loginPage, contactsPage }) => {
+    await loginPage.login();
     await contactsPage.navigateToContacts();
     /**
      * As a demo, hardcode email search for now, need to improve to use dynamic data fron fixture in the future
@@ -137,10 +125,10 @@ test.describe.serial('Contact Management Flow', () => {
    * Compare differences between simple and advanced search to find archived contacts
    * Delete the first archived contact and verify deletion
    */
-  test('TC5-Delete archived contact by comparing search results', async ({ authenticatedPage: page }) => {
-    const contactsPage = new ContactsPage(page);
+  test('TC5-Delete archived contact by comparing search results', async ({ page, loginPage, contactsPage }) => {
     const searchValue = '@test';
 
+    await loginPage.login();
     await contactsPage.navigateToContacts();
     
     // Get search results from both searches
@@ -179,9 +167,8 @@ test.describe.serial('Contact Management Flow', () => {
 })
 
 test.describe.serial('Validation checks', () => {
-  test('TC6-Validation message for empty contact form', async ({ authenticatedPage: page }) => {
-    const contactsPage = new ContactsPage(page);
-    
+  test('TC6-Validation message for empty contact form', async ({ page, loginPage, contactsPage }) => {
+    await loginPage.login();
     await contactsPage.navigateToContacts();
     await contactsPage.clickAddContact();
     
@@ -194,9 +181,10 @@ test.describe.serial('Validation checks', () => {
     await dialog.accept();
   })
 
-  test('TC7-Validation message for password fields', async ({ authenticatedPage: page }) => {
-    const contactsPage = new ContactsPage(page);
+  test('TC7-Validation message for password fields', async ({ page, loginPage, contactsPage }) => {
     const contentFrame = page.locator('iframe[name="contentarea"]').contentFrame();
+    
+    await loginPage.login();
     
     await contactsPage.navigateToContacts();
     await contactsPage.clickAddContact();
@@ -244,10 +232,10 @@ test.describe.serial('Validation checks', () => {
     await expect(mismatchError).toHaveText('Passwords do not match');
   })
 
-  test('TC8-Validation message for email field', async ({ authenticatedPage: page }) => {
-    const contactsPage = new ContactsPage(page);
+  test('TC8-Validation message for email field', async ({ page, loginPage, contactsPage }) => {
     const contentFrame = page.locator('iframe[name="contentarea"]').contentFrame();
     
+    await loginPage.login();
     await contactsPage.navigateToContacts();
     await contactsPage.clickAddContact();
     
